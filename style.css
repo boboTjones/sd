@@ -52,6 +52,11 @@ button {
   background: #aaa;
 }
 
+button#deleteButton {
+}
+
+button#goButton 
+
 table.messages-table {
   width: auto; 
   border-collapse: collapse;

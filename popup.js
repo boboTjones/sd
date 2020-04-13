@@ -5,6 +5,8 @@
 'use strict';
 
 let goButton = document.getElementById('goButton');
+let deleteButton = document.getElementById('deleteButton');
+
 function htmlEscape(str, noQuotes) {
   var map = [];
   map['&'] = '&amp;';
@@ -51,7 +53,6 @@ function formatMessages(data) {
       for ( let [i, item] of Object.entries(blob['items']) ) {
         str += '<tr>';
         for ( let [l, line] of Object.entries(item['messages']) ) {
-          console.log(line);
           str += '<td>';
           str += '<input type="radio" id=' + item['channel']['id'] + ' name="user" value="' + line['user']  + '"/>';
           str += '<input type="hidden" name="ts" value="' + line['ts']  + '"/>';
@@ -65,25 +66,26 @@ function formatMessages(data) {
     }
   }
   document.getElementById("messages").innerHTML = str;
-  document.getElementById("deleteButton").removeAttribute("hidden"); 
+  document.getElementById("deleteButton").hidden = false;
+  document.getElementById("goButton").hidden = true;
 }
 
 function getMessages(user, token, url, teamId) {
-  console.log(url);
   var req = new XMLHttpRequest();
   var postData = 'module=messages&max_extract_len=9999&sort=score&query=from%3a%3c@' + user + '%3e&token=' + token + "&team=" + teamId
   req.open("POST", url + 'api/search.modules', true);
   req.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
   req.onreadystatechange = function () {
     if (req.readyState === 4 && req.status === 200) {
-    // XX ToDo(erin): catch not-JSON of failed response somewhere around here.
+      // XX ToDo(erin): catch not-JSON of failed response somewhere around here.
       formatMessages(req.response);
     }
   };
   req.send(postData);
 }
 
-goButton.onclick = function(element) {
+goButton.onclick = function(e) {
+  e.preventDefault();
   chrome.tabs.executeScript({code: 'localStorage.getItem("localConfig_v2")'}, function(r) { 
     let data = JSON.parse(r[0]);
     var teamId = data['lastActiveTeamId'];
@@ -92,5 +94,12 @@ goButton.onclick = function(element) {
     var token = teams[teamId]['token'];
     var user = teams[teamId]['user_id'];
     getMessages(user, token, url, teamId);
- });
+  });
 };
+
+deleteButton.onclick = function(e) {
+  var f;
+  e.preventDefault();
+  f = document.forms;
+  console.log(f);
+}
