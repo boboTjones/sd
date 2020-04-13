@@ -5,7 +5,13 @@
 const goButton = document.getElementById('go_button')
 const deleteButton = document.getElementById('delete_button')
 
-let token; let url; let user; let pageCount = ''
+let token; let url; let user; let teamId = ''
+let pageId; let pageCount = 1
+let teams = {}
+
+const sleep = (ms) => {
+    return new Promise(r => setTimeout(r, ms))
+}
 
 function htmlEscape (str, q) {
     var out = []
@@ -42,7 +48,7 @@ function formatMessages (data) {
             str += '<table class="messages-table">'
             str += '<thead>'
             str += '<tr>'
-            str += '<th><input type="checkbox" name="select_all" value=""/></th>'
+            str += '<th align="left"><input type="checkbox" name="select_all"/></th>'
             str += '<th align="left">Channel</th>'
             str += '<th align="left">Message</th>'
             str += '</tr>'
@@ -52,11 +58,11 @@ function formatMessages (data) {
             for (const [i, item] of Object.entries(blob.items)) {
                 str += '<tr>'
                 for (const [l, line] of Object.entries(item.messages)) {
-                    str += '<td>'
+                    str += '<td valign="top">'
                     str += '<input type="checkbox" id=' + item.channel.id + ' name="ts" value="' + line.ts + '"/>'
                     str += '<input type="hidden" name="user" value="' + line.user + '"/>'
                     str += '</td>'
-                    str += '<td>' + item.channel.id + '</td>'
+                    str += '<td valign="top">' + item.channel.id + '</td>'
                     str += '<td>' + htmlEscape(line.text, true) + '</td>'
                 }
                 str += '</tr>'
@@ -70,7 +76,6 @@ function formatMessages (data) {
     s.addEventListener('change', function (e) {
         var items = document.querySelectorAll('input[name="ts"]')
         for (const [i, item] of Object.entries(items)) {
-            console.log(item)
             item.checked = s.checked
         }
     })
@@ -78,9 +83,10 @@ function formatMessages (data) {
     goButton.hidden = true
 };
 
-function getMessages (user, teamId, pageId = 1) {
+function getMessages () {
+    pageId = pageId || 1
     var req = new XMLHttpRequest()
-    var postData = 'module=messages&max_extract_len=9999&sort=score&query=from%3a%3c@' + user + '%3e&token=' + token + '&team=' + teamId + '&page=' + pageId
+    var postData = 'module=messages&sort=score&query=from%3a%3c@' + user + '%3e&token=' + token + '&team=' + teamId + '&page=' + pageId
     req.open('POST', url + 'api/search.modules', true)
     req.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded')
     req.onreadystatechange = function () {
@@ -106,28 +112,33 @@ function zorchMessages (id, ts) {
     req.send(postData)
 };
 
-function refreshMessages () {
-    // XXX ToDo(erin): refresh popup with next 20 results
-};
-
 goButton.onclick = function (e) {
     e.preventDefault()
     chrome.tabs.executeScript({ code: 'localStorage.getItem("localConfig_v2")' }, function (r) {
         const data = JSON.parse(r[0])
-        var teamId = data.lastActiveTeamId
-        var teams = data.teams
+        teams = data.teams
+        teamId = data.lastActiveTeamId
         url = teams[teamId].url
         token = teams[teamId].token
         user = teams[teamId].user_id
-        getMessages(user, teamId)
+        getMessages()
     })
 }
 
 deleteButton.onclick = function (e) {
     e.preventDefault()
+    this.innerText = 'Deleting...'
     var items = document.querySelectorAll('input[name="ts"]:checked')
     for (const [i, item] of Object.entries(items)) {
         // XXX ToDo(erin): maybe want to slap an ARE YOU SURE? on this.
         zorchMessages(item.id, item.value)
+        // random sleep to thwart throttling?
+        // sleep(Math.random() * 100)
     }
+    var s = document.querySelector('input[name=select_all]')
+    if (s.checked) {
+        pageId += 1
+    }
+    getMessages()
+    this.innerText = 'Delete selected'
 }

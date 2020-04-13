@@ -1,16 +1,11 @@
 /* Copyright 2020 Erin Ptacek. All rights reserved. */
-/* CSS reset ---------------------------------------------------------------- */
-body, div, p, img,
-form, input, button {
-  padding: 0px;
-  margin: 0px;
-  font: inherit
-}
 
 body {
   margin: 5px;
   padding: 5px;
+  width: 500px;
   font-family: Arial, Helvetica, sans-serif;
+  font-size: 100%;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   color: #aaa;
@@ -19,7 +14,6 @@ body {
 
 #main {
   display: block;
-  min-width: 400px;
 }
 
 button {
@@ -35,7 +29,7 @@ button#deleteButton {
 button#goButton 
 
 table.messages-table {
-  width: auto; 
+  width: 500px; 
   border-collapse: collapse;
   margin: 0 auto;
 }
@@ -45,8 +39,8 @@ tr:hover {
 }
 
 th {
-  padding: 2px;
-  margin: 2px;
+  padding: 5px;
+  margin: 5px;
   color: #dd9;
 }
 
