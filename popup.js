@@ -50,9 +50,12 @@ function formatMessages(data) {
       
       for ( let [i, item] of Object.entries(blob['items']) ) {
         str += '<tr>';
-        str += '<td class="radio"><input type="radio" id=" name="" value=""></td>';
         for ( let [l, line] of Object.entries(item['messages']) ) {
           console.log(line);
+          str += '<td>';
+          str += '<input type="radio" id=' + item['channel']['id'] + ' name="user" value="' + line['user']  + '"/>';
+          str += '<input type="hidden" name="ts" value="' + line['ts']  + '"/>';
+          str += '</td>';
           str += '<td>' + item['channel']['id'] + '</td>';
           str += '<td>' + htmlEscape(line['text'], true) + '</td>';
         }
@@ -62,6 +65,7 @@ function formatMessages(data) {
     }
   }
   document.getElementById("messages").innerHTML = str;
+  document.getElementById("deleteButton").removeAttribute("hidden"); 
 }
 
 function getMessages(user, token, url, teamId) {

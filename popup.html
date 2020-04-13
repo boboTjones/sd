@@ -6,14 +6,17 @@
         </head>
         <body>
                 <div id="main">
-                        <div>
+                        <div id="buttons">
                                 <button id="goButton">Fetch</button>
-                                <script src="popup.js"></script>
                         </div>
-                        <div id="messages">
-                                <p>Click the button to view all of</p>
-                                <p>your messages for this slack.</p>
-                        </div>
+                        <form action="#" method="POST">
+                                <div id="messages">
+                                        <p>Click the button to view all of</p>
+                                        <p>your messages for this slack.</p>
+                                </div>
+                                <button type="submit" id="deleteButton" hidden>Delete selected</button>
+                        </form>
                 </div>
         </body>
+        <script src="popup.js"></script>
 </html>
