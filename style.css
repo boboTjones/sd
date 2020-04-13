@@ -1,0 +1,77 @@
+/* CSS reset ---------------------------------------------------------------- */
+body, div, p, img,
+form, input, button {
+  padding: 0px;
+  margin: 0px;
+  font: inherit
+}
+
+input {
+  font-family: inherit;
+  font-size: 100%;
+  vertical-align: baseline;
+}
+
+img, iframe {
+  border: 0;
+  vertical-align: middle
+}
+
+.clear {
+  clear: both
+}
+
+.clearfix:after {
+  visibility: hidden;
+  display: block;
+  font-size: 0;
+  content: " ";
+  clear: both;
+  height: 0
+}
+
+body {
+  margin: 5px;
+  padding: 5px;
+  font-family: Arial, Helvetica, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  color: #aaa;
+  background: #3c4452;
+}
+
+#main {
+  display: block;
+  min-width: 400px;
+}
+
+button {
+  padding: 12px;
+  margin: 5px;
+  color: #3c4452;
+  background: #aaa;
+}
+
+table.messages-table {
+  width: auto; 
+  border-collapse: collapse;
+  margin: 0 auto;
+}
+
+tr:hover {
+    background: #59657a;
+}
+
+th {
+  padding: 2px;
+  margin: 2px;
+  color: #dd9;
+}
+
+td {
+    padding: 5px;
+    margin: 5px;
+    word-wrap:break-word;
+}
+
+
