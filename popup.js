@@ -70,10 +70,10 @@ function formatMessages (data) {
     document.getElementById('messages').innerHTML = str
     var s = document.querySelector('input[name=select_all]')
     s.addEventListener('change', function (e) {
-        var items = document.querySelectorAll('input[name="ts"]');
+        var items = document.querySelectorAll('input[name="ts"]')
         for (const [i, item] of Object.entries(items)) {
-            console.log(item);
-            item.checked = s.checked;
+            console.log(item)
+            item.checked = s.checked
         }
     })
     deleteButton.hidden = false
@@ -87,7 +87,7 @@ function getMessages (user, teamId, pageId = 1) {
     req.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded')
     req.onreadystatechange = function () {
         if (req.readyState === 4 && req.status === 200) {
-            // XX ToDo(erin): catch not-JSON of failed response somewhere around here.
+            // XXX ToDo(erin): catch not-JSON of failed response somewhere around here.
             formatMessages(req.response)
         }
     }
@@ -101,7 +101,7 @@ function zorchMessages (id, ts) {
     req.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded')
     req.onreadystatechange = function () {
         if (req.readyState === 4 && req.status === 200) {
-            // XX ToDo(erin): catch and log errors
+            // XXX ToDo(erin): catch and log errors
             console.log(req.response)
         }
     }
@@ -126,9 +126,10 @@ goButton.onclick = function (e) {
 }
 
 deleteButton.onclick = function (e) {
-    e.preventDefault();
-    var items = document.querySelectorAll('input[name="ts"]:checked');
+    e.preventDefault()
+    var items = document.querySelectorAll('input[name="ts"]:checked')
     for (const [i, item] of Object.entries(items)) {
-        zorchMessages(item.id, item.value);
+        // XXX ToDo(erin): maybe want to slap an ARE YOU SURE? on this.
+        zorchMessages(item.id, item.value)
     }
 }
