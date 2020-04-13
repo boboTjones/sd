@@ -6,30 +6,6 @@ form, input, button {
   font: inherit
 }
 
-input {
-  font-family: inherit;
-  font-size: 100%;
-  vertical-align: baseline;
-}
-
-img, iframe {
-  border: 0;
-  vertical-align: middle
-}
-
-.clear {
-  clear: both
-}
-
-.clearfix:after {
-  visibility: hidden;
-  display: block;
-  font-size: 0;
-  content: " ";
-  clear: both;
-  height: 0
-}
-
 body {
   margin: 5px;
   padding: 5px;
