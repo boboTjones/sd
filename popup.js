@@ -6,6 +6,7 @@
 
 let goButton = document.getElementById('goButton');
 let deleteButton = document.getElementById('deleteButton');
+let token, url, user = '';
 
 function htmlEscape(str, noQuotes) {
   var map = [];
@@ -43,6 +44,7 @@ function formatMessages(data) {
       str += '<table class="messages-table">';
       str += '<thead>';
       str += '<tr>';
+      // XX ToDo(erin): put a selectAll button here.
       str += '<th align="left">&nbsp;</th>';
       str += '<th align="left">Channel</th>';
       str += '<th align="left">Message</th>';
@@ -54,8 +56,8 @@ function formatMessages(data) {
         str += '<tr>';
         for ( let [l, line] of Object.entries(item['messages']) ) {
           str += '<td>';
-          str += '<input type="radio" id=' + item['channel']['id'] + ' name="user" value="' + line['user']  + '"/>';
-          str += '<input type="hidden" name="ts" value="' + line['ts']  + '"/>';
+          str += '<input type="checkbox" id=' + item['channel']['id'] + ' name="ts" value="' + line['ts']  + '"/>';
+          str += '<input type="hidden" name="user" value="' + line['user']  + '"/>';
           str += '</td>';
           str += '<td>' + item['channel']['id'] + '</td>';
           str += '<td>' + htmlEscape(line['text'], true) + '</td>';
@@ -70,9 +72,9 @@ function formatMessages(data) {
   document.getElementById("goButton").hidden = true;
 }
 
-function getMessages(user, token, url, teamId) {
+function getMessages(user, teamId) {
   var req = new XMLHttpRequest();
-  var postData = 'module=messages&max_extract_len=9999&sort=score&query=from%3a%3c@' + user + '%3e&token=' + token + "&team=" + teamId
+  var postData = 'module=messages&max_extract_len=9999&sort=score&query=from%3a%3c@' + user + '%3e&token=' + token + '&team=' + teamId
   req.open("POST", url + 'api/search.modules', true);
   req.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
   req.onreadystatechange = function () {
@@ -84,22 +86,38 @@ function getMessages(user, token, url, teamId) {
   req.send(postData);
 }
 
+function zorch(id, ts) {
+  var req = new XMLHttpRequest();
+  var postData = 'channel=' + id  + '&ts=' + ts + '&token=' + token;
+  req.open('POST', url + 'api/chat.delete', true);
+  req.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+  req.onreadystatechange = function () {
+    if (req.readyState === 4 && req.status === 200) {
+      // XX ToDo(erin): catch and log errors
+     console.log(req.response);
+    }
+  };
+  req.send(postData);
+}
+
 goButton.onclick = function(e) {
   e.preventDefault();
   chrome.tabs.executeScript({code: 'localStorage.getItem("localConfig_v2")'}, function(r) { 
     let data = JSON.parse(r[0]);
     var teamId = data['lastActiveTeamId'];
     var teams = data['teams'];
-    var url = teams[teamId]['url'];
-    var token = teams[teamId]['token'];
-    var user = teams[teamId]['user_id'];
-    getMessages(user, token, url, teamId);
+    url = teams[teamId]['url'];
+    token = teams[teamId]['token'];
+    user = teams[teamId]['user_id'];
+    getMessages(user, teamId);
   });
 };
 
 deleteButton.onclick = function(e) {
-  var f;
+  var items;
   e.preventDefault();
-  f = document.forms;
-  console.log(f);
+  items = document.querySelectorAll('input[name="ts"]:checked');
+  for ( let [i, item] of Object.entries(items) ) {
+    zorch(item.id, item.value);
+  }
 }
