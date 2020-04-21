@@ -2,7 +2,7 @@
   "name": "Slack Ghosties",
   "version": "1.0",
   "description": "Bulk delete Slack messages.",
-  "permissions": ["activeTab", "declarativeContent", "https://*.slack.com/"],
+  "permissions": ["declarativeContent", "https://*.slack.com/"],
   "background": {
     "scripts": ["background.js"],
     "persistent": false

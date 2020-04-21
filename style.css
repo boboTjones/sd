@@ -23,24 +23,19 @@ button {
   background: #aaa;
 }
 
-button#deleteButton {
-}
-
-button#goButton 
-
 table.messages-table {
   width: 500px; 
   border-collapse: collapse;
   margin: 0 auto;
+  float: left;
 }
 
 tr:hover {
     background: #59657a;
 }
 
-th {
-  padding: 5px;
-  margin: 5px;
+thead {
+  font-weight: bold;
   color: #dd9;
 }
 

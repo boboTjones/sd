@@ -6,20 +6,15 @@ const goButton = document.getElementById('go_button')
 const deleteButton = document.getElementById('delete_button')
 
 let token; let url; let user; let teamId = ''
-let pageId; let pageCount = 1
-let teams = {}
-
-const sleep = (ms) => {
-    return new Promise(r => setTimeout(r, ms))
-}
+let teams; let pagination = {}
 
 function htmlEscape (str, q) {
     var out = []
+    var r
+
     out['&'] = '&amp;'
     out['<'] = '&lt;'
     out['>'] = '&gt;'
-
-    var r
 
     if (q) {
         r = /[&<>]/g
@@ -28,51 +23,58 @@ function htmlEscape (str, q) {
         out["'"] = '&#39;'
         r = /[&<>"']/g
     }
-
     return ('' + str).replace(r, function (m) {
         return out[m]
     })
 };
 
-function formatMessages (data) {
-    var str = ''
+function renderPageButtons () {
+    let buttonDiv = document.createElement('div'); 
+    buttonDiv.setAttribute('id', 'page_buttons');
+    ['first', 'fwd', 'back', 'last'].forEach(function(e, i) {
+        var b = document.createElement('button')
+        b.setAttribute('id', e)
+        b.innerHTML = e
+        buttonDiv.appendChild(b)
+    })
+    return buttonDiv
+}
+
+function renderMessages (data) {
     var blob = {}
     try {
         blob = JSON.parse(data)
+        pagination = blob.pagination
     } catch (e) {
         console.log(['Error parsing server response', e])
     } finally {
         if (blob.ok === true) {
-            pageCount = blob.pagination.page_count
-
-            str += '<table class="messages-table">'
-            str += '<thead>'
-            str += '<tr>'
-            str += '<th align="left"><input type="checkbox" name="select_all"/></th>'
-            str += '<th align="left">Channel</th>'
-            str += '<th align="left">Message</th>'
-            str += '</tr>'
-            str += '</thead>'
-            str += '<tbody>'
-
+            var table = document.createElement('table')
+            table.setAttribute('class', 'messages-table')
+            var head = table.createTHead()
+            var row = head.insertRow(0);
+            ['<input type="checkbox" name="select_all"/>', 'Channel ID', 'Message'].forEach(function (e, i) {
+                row.insertCell(i).innerHTML = e
+            })
+            var body = table.createTBody()
             for (const [i, item] of Object.entries(blob.items)) {
-                str += '<tr>'
+                var row = body.insertRow(i)
                 for (const [l, line] of Object.entries(item.messages)) {
-                    str += '<td valign="top">'
-                    str += '<input type="checkbox" id=' + item.channel.id + ' name="ts" value="' + line.ts + '"/>'
-                    str += '<input type="hidden" name="user" value="' + line.user + '"/>'
-                    str += '</td>'
-                    str += '<td valign="top">' + item.channel.id + '</td>'
-                    str += '<td>' + htmlEscape(line.text, true) + '</td>'
+                    row.insertCell(0).innerHTML = '<input type="checkbox" id=' + item.channel.id + ' name="ts" value="' + line.ts + '"/>'
+                    row.insertCell(1).innerHTML = item.channel.id
+                    row.insertCell(2).innerHTML = htmlEscape(line.text, false)
                 }
-                str += '</tr>'
             }
-            str += '</tbody></table>'
         }
     }
+    var m = document.getElementById('messages')
+    m.innerHTML = '';
+    m.appendChild(table, m)
+    var b = renderPageButtons()
+    m.appendChild(b)
 
-    document.getElementById('messages').innerHTML = str
     var s = document.querySelector('input[name=select_all]')
+
     s.addEventListener('change', function (e) {
         var items = document.querySelectorAll('input[name="ts"]')
         for (const [i, item] of Object.entries(items)) {
@@ -84,15 +86,16 @@ function formatMessages (data) {
 };
 
 function getMessages () {
-    pageId = pageId || 1
+    const pageId = pagination.pageId || 1
     var req = new XMLHttpRequest()
     var postData = 'module=messages&sort=score&query=from%3a%3c@' + user + '%3e&token=' + token + '&team=' + teamId + '&page=' + pageId
+
     req.open('POST', url + 'api/search.modules', true)
     req.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded')
     req.onreadystatechange = function () {
         if (req.readyState === 4 && req.status === 200) {
             // XXX ToDo(erin): catch not-JSON of failed response somewhere around here.
-            formatMessages(req.response)
+            renderMessages(req.response)
         }
     }
     req.send(postData)
@@ -101,6 +104,7 @@ function getMessages () {
 function zorchMessages (id, ts) {
     var req = new XMLHttpRequest()
     var postData = 'channel=' + id + '&ts=' + ts + '&token=' + token
+
     req.open('POST', url + 'api/chat.delete', true)
     req.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded')
     req.onreadystatechange = function () {
@@ -137,7 +141,7 @@ deleteButton.onclick = function (e) {
     }
     var s = document.querySelector('input[name=select_all]')
     if (s.checked) {
-        pageId += 1
+        pagination.page += 1
     }
     getMessages()
     this.innerText = 'Delete selected'
