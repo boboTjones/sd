@@ -45,7 +45,7 @@ function renderPageButtons (data) {
   first.addEventListener('click', function (e) {
     getMessages(1)
   })
-  first.innerHTML = '<li>first</li>'
+  first.innerHTML = '<li><<<</li>'
   buttonList.appendChild(first)
 
   if (data.page_count > endset ) {
@@ -72,7 +72,7 @@ function renderPageButtons (data) {
   }
   var last = document.createElement('a')
   setAttributes(last, { id: data.page_count, href: '#' })
-  last.innerHTML = '<li>last</li>'
+  last.innerHTML = '<li>>>></li>'
   last.addEventListener('click', function (e) {
     // XX ToDo(erin): Renumber buttonList here
     getMessages(data.page_count)
