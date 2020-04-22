@@ -35,8 +35,8 @@ function setAttributes (element, options) {
 }
 
 function renderPageButtons (data) {
-  console.log(data)
   var offset = 1
+  var endset = 10
   var buttonDiv = document.createElement('div')
   setAttributes(buttonDiv, { class: 'pagination', id: 'page_buttons' })
   var buttonList = document.createElement('ul')
@@ -48,32 +48,35 @@ function renderPageButtons (data) {
   first.innerHTML = '<li>first</li>'
   buttonList.appendChild(first)
 
-  if (data.page > 2 ) {
+  if (data.page_count > endset ) {
     offset = data.page - 1
+    endset = offset + 10
   }
 
-  for (var i = offset; i < offset + 10; i++) {
+  if (data.page_count < endset) {
+    offset = 1
+    endset = data.page_count
+  }
+  
+  for (var i = offset; i < endset; i++) {
     var a = document.createElement('a')
     setAttributes(a, { id: i, href: '#' })
     a.addEventListener('click', function (e) {
       getMessages(this.id)
-    })
-    
+    }) 
     if (i === data.page) {
       a.setAttribute('class', 'active')
     }
-
-    var l = document.createElement('li')
-    l.innerHTML = i
-    a.appendChild(l)
+    a.innerHTML = '<li>' + i + '</li>'
     buttonList.appendChild(a)
   }
   var last = document.createElement('a')
   setAttributes(last, { id: data.page_count, href: '#' })
+  last.innerHTML = '<li>last</li>'
   last.addEventListener('click', function (e) {
+    // XX ToDo(erin): Renumber buttonList here
     getMessages(data.page_count)
   })
-  last.innerHTML = '<li>last</li>'
   buttonList.appendChild(last)
   buttonDiv.appendChild(buttonList)
   return buttonDiv
@@ -87,6 +90,7 @@ function renderMessages (data) {
     console.log(['Error parsing server response', e])
   } finally {
     if (blob.ok === true) {
+      console.log(blob.pagination);
       var table = document.createElement('table')
       table.setAttribute('class', 'messages-table')
       var head = table.createTHead()
@@ -103,7 +107,7 @@ function renderMessages (data) {
           row.insertCell(2).innerHTML = htmlEscape(line.text, false)
         }
       }
-    }
+    } // XX ToDo(erin): else print something sad...
   }
   var m = document.getElementById('messages')
   m.innerHTML = ''
@@ -127,18 +131,18 @@ function getMessages (pageId = 1) {
   console.log('getting page number ' + pageId)
   var req = new XMLHttpRequest()
   var postData = 'module=messages&sort=score&query=from%3a%3c@' + user + '%3e&token=' + token + '&team=' + teamId + '&page=' + pageId
-
   req.open('POST', url + 'api/search.modules', true)
   req.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded')
   req.onreadystatechange = function () {
     if (req.readyState === 4 && req.status === 200) {
+      //console.log(req.response)
       renderMessages(req.response)
     }
   }
   req.send(postData)
 };
 
-function zorchMessages (id, ts) {
+async function zorchMessages (id, ts) {
   var req = new XMLHttpRequest()
   var postData = 'channel=' + id + '&ts=' + ts + '&token=' + token
 
@@ -162,24 +166,25 @@ goButton.onclick = function (e) {
     url = teams[teamId].url
     token = teams[teamId].token
     user = teams[teamId].user_id
-    getMessages()
+    getMessages(1)
+  })
+}
+
+// I don't think this is working.
+function randSleep() {
+  return new Promise(r => {
+    setTimeout(() => {
+      r('helu')
+    }, Math.random() * 100)
   })
 }
 
 deleteButton.onclick = function (e) {
   e.preventDefault()
-  this.innerText = 'Deleting...'
   var items = document.querySelectorAll('input[name="ts"]:checked')
   for (const [i, item] of Object.entries(items)) {
     // XXX ToDo(erin): maybe want to slap an ARE YOU SURE? on this.
-    zorchMessages(item.id, item.value)
-    // random sleep to thwart throttling?
-    // sleep(Math.random() * 100)
+    zorchMessages(item.id, item.value).then(randSleep())
   }
-  var s = document.querySelector('input[name=select_all]')
-  if (s.checked) {
-    pagination.page += 1
-  }
-  getMessages()
-  this.innerText = 'Delete selected'
+  getMessages(1)
 }
