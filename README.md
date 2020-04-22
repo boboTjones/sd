@@ -15,4 +15,4 @@ Slack Ghosties going to delete __everything you select, permanently.__ Currently
 
 The pagination is janky. Turns out there's a reason why people use OPC to do that, but I'm enjoying doing it by hand. Sort of. 
 
-Eventually I will extend it to search for files instead of messages. 
+Eventually I will extend it to search for files as well as of messages. 
