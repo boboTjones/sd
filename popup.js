@@ -35,49 +35,57 @@ function setAttributes (element, options) {
 }
 
 function renderPageButtons (data) {
+  // Slack API apparently doesn't let you get more than 100 pages of history.
+  var pageCount = (data.page_count < 100 ? data.page_count : 100)
   var offset = 1
   var endset = 10
   var buttonDiv = document.createElement('div')
   setAttributes(buttonDiv, { class: 'pagination', id: 'page_buttons' })
   var buttonList = document.createElement('ul')
-  var first = document.createElement('a')
-  setAttributes(first, { id: '1', href: '#' })
-  first.addEventListener('click', function (e) {
-    getMessages(1)
-  })
-  first.innerHTML = '<li><<<</li>'
-  buttonList.appendChild(first)
 
-  if (data.page_count > endset ) {
-    offset = data.page - 1
+  if (data.page !== 1) {
+    var first = document.createElement('a')
+    setAttributes(first, { id: '1', href: '#' })
+    first.addEventListener('click', function (e) {
+      getMessages(1)
+    })
+    first.innerHTML = '<li><<<</li>'
+    buttonList.appendChild(first)
+  }
+
+  if (data.page > 5) {
+    offset = data.page - 5
+    endset = data.page + 5
+  }
+
+  if ((pageCount - data.page) > endset) {
     endset = offset + 10
+  } else {
+    endset = pageCount + 1
   }
 
-  if (data.page_count < endset) {
-    offset = 1
-    endset = data.page_count
-  }
-  
   for (var i = offset; i < endset; i++) {
     var a = document.createElement('a')
     setAttributes(a, { id: i, href: '#' })
     a.addEventListener('click', function (e) {
       getMessages(this.id)
-    }) 
+    })
     if (i === data.page) {
       a.setAttribute('class', 'active')
     }
     a.innerHTML = '<li>' + i + '</li>'
     buttonList.appendChild(a)
   }
-  var last = document.createElement('a')
-  setAttributes(last, { id: data.page_count, href: '#' })
-  last.innerHTML = '<li>>>></li>'
-  last.addEventListener('click', function (e) {
-    // XX ToDo(erin): Renumber buttonList here
-    getMessages(data.page_count)
-  })
-  buttonList.appendChild(last)
+
+  if (data.page !== 100) {
+    var last = document.createElement('a')
+    setAttributes(last, { id: data.page_count, href: '#' })
+    last.innerHTML = '<li>>>></li>'
+    last.addEventListener('click', function (e) {
+      getMessages(pageCount)
+    })
+    buttonList.appendChild(last)
+  }
   buttonDiv.appendChild(buttonList)
   return buttonDiv
 }
@@ -90,7 +98,6 @@ function renderMessages (data) {
     console.log(['Error parsing server response', e])
   } finally {
     if (blob.ok === true) {
-      console.log(blob.pagination);
       var table = document.createElement('table')
       table.setAttribute('class', 'messages-table')
       var head = table.createTHead()
@@ -128,14 +135,13 @@ function renderMessages (data) {
 };
 
 function getMessages (pageId = 1) {
-  console.log('getting page number ' + pageId)
   var req = new XMLHttpRequest()
   var postData = 'module=messages&sort=score&query=from%3a%3c@' + user + '%3e&token=' + token + '&team=' + teamId + '&page=' + pageId
   req.open('POST', url + 'api/search.modules', true)
   req.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded')
   req.onreadystatechange = function () {
     if (req.readyState === 4 && req.status === 200) {
-      //console.log(req.response)
+      // console.log(req.response)
       renderMessages(req.response)
     }
   }
@@ -171,7 +177,7 @@ goButton.onclick = function (e) {
 }
 
 // I don't think this is working.
-function randSleep() {
+function randSleep () {
   return new Promise(r => {
     setTimeout(() => {
       r('helu')
