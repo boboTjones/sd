@@ -43,7 +43,7 @@ function renderPageButtons (data) {
   setAttributes(buttonDiv, { class: 'pagination', id: 'page_buttons' })
   var buttonList = document.createElement('ul')
 
-  if (data.page !== 1) {
+  if (data.page > 5) {
     var first = document.createElement('a')
     setAttributes(first, { id: '1', href: '#' })
     first.addEventListener('click', function (e) {
@@ -58,7 +58,7 @@ function renderPageButtons (data) {
     endset = data.page + 5
   }
 
-  if ((pageCount - data.page) > endset) {
+  if ((pageCount - data.page) > 5) {
     endset = offset + 10
   } else {
     endset = pageCount + 1
@@ -77,7 +77,7 @@ function renderPageButtons (data) {
     buttonList.appendChild(a)
   }
 
-  if (data.page !== 100) {
+  if (data.page < 95) {
     var last = document.createElement('a')
     setAttributes(last, { id: data.page_count, href: '#' })
     last.innerHTML = '<li>>>></li>'
