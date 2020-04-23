@@ -49,7 +49,7 @@ function renderPageButtons (data) {
     var first = document.createElement('a')
     setAttributes(first, { id: '1', href: '#' })
     first.addEventListener('click', function (e) {
-      getMessages(1).then(function(d,e) {console.log([d, e])})
+      getMessages(1)
     })
     first.innerHTML = '<li><<<</li>'
     buttonList.appendChild(first)
@@ -65,7 +65,7 @@ function renderPageButtons (data) {
     var a = document.createElement('a')
     setAttributes(a, { id: i, href: '#' })
     a.addEventListener('click', function (e) {
-      getMessages(this.id).then(function(d,e) {console.log([d, e])})
+      getMessages(this.id)
     })
     if (i === data.page) {
       a.setAttribute('class', 'active')
@@ -198,5 +198,5 @@ deleteButton.onclick = function (e) {
     // XXX ToDo(erin): maybe want to slap an ARE YOU SURE? on this.
     zorchMessages(item.id, item.value).then(randSleep())
   }
-  getMessages(1).then(function(d,e) {console.log([d, e])})
+  getMessages(1)
 }
