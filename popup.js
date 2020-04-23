@@ -44,18 +44,15 @@ function renderPageButtons (data) {
   var buttonList = document.createElement('ul')
 
   if (data.page > 5) {
+    offset = data.page - 5
+    endset = data.page + 5
     var first = document.createElement('a')
     setAttributes(first, { id: '1', href: '#' })
     first.addEventListener('click', function (e) {
-      getMessages(1)
+      getMessages(1).then(function(d,e) {console.log([d, e])})
     })
     first.innerHTML = '<li><<<</li>'
     buttonList.appendChild(first)
-  }
-
-  if (data.page > 5) {
-    offset = data.page - 5
-    endset = data.page + 5
   }
 
   if ((pageCount - data.page) > 5) {
@@ -68,7 +65,7 @@ function renderPageButtons (data) {
     var a = document.createElement('a')
     setAttributes(a, { id: i, href: '#' })
     a.addEventListener('click', function (e) {
-      getMessages(this.id)
+      getMessages(this.id).then(function(d,e) {console.log([d, e])})
     })
     if (i === data.page) {
       a.setAttribute('class', 'active')
@@ -77,7 +74,7 @@ function renderPageButtons (data) {
     buttonList.appendChild(a)
   }
 
-  if (data.page < 95) {
+  if (data.page < (pageCount - 5)) {
     var last = document.createElement('a')
     setAttributes(last, { id: data.page_count, href: '#' })
     last.innerHTML = '<li>>>></li>'
@@ -95,6 +92,7 @@ function renderMessages (data) {
   try {
     blob = JSON.parse(data)
   } catch (e) {
+    // XX ToDo(erin): This hasn't hit yet. Probably need to put something in the messages div when it does.
     console.log(['Error parsing server response', e])
   } finally {
     if (blob.ok === true) {
@@ -134,21 +132,27 @@ function renderMessages (data) {
   goButton.hidden = true
 };
 
-function getMessages (pageId = 1) {
-  var req = new XMLHttpRequest()
-  var postData = 'module=messages&sort=score&query=from%3a%3c@' + user + '%3e&token=' + token + '&team=' + teamId + '&page=' + pageId
-  req.open('POST', url + 'api/search.modules', true)
-  req.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded')
-  req.onreadystatechange = function () {
-    if (req.readyState === 4 && req.status === 200) {
-      // console.log(req.response)
-      renderMessages(req.response)
+const getMessages = function (pageId = 1) {
+  return new Promise(function(resolve, reject) {
+    var req = new XMLHttpRequest()
+    var postData = 'module=messages&sort=score&query=from%3a%3c@' + user + '%3e&token=' + token + '&team=' + teamId + '&page=' + pageId
+    req.open('POST', url + 'api/search.modules', true)
+    req.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded')
+    req.onload = function (e) {
+      if (req.status === 200) {
+        resolve(renderMessages(req.response))
+      } else {
+        reject(e)
+      }
     }
-  }
-  req.send(postData)
+    req.onerror = function (e) {
+      reject(console.log(e))
+    }
+    req.send(postData)
+  })
 };
 
-async function zorchMessages (id, ts) {
+function zorchMessages (id, ts) {
   var req = new XMLHttpRequest()
   var postData = 'channel=' + id + '&ts=' + ts + '&token=' + token
 
@@ -158,6 +162,8 @@ async function zorchMessages (id, ts) {
     if (req.readyState === 4 && req.status === 200) {
       // XXX ToDo(erin): catch and log errors
       console.log(req.response)
+    } else {
+      console.log(req)
     }
   }
   req.send(postData)
@@ -192,5 +198,5 @@ deleteButton.onclick = function (e) {
     // XXX ToDo(erin): maybe want to slap an ARE YOU SURE? on this.
     zorchMessages(item.id, item.value).then(randSleep())
   }
-  getMessages(1)
+  getMessages(1).then(function(d,e) {console.log([d, e])})
 }
