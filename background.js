@@ -1,5 +1,3 @@
-// Copyright 2020 Erin Ptacek. All rights reserved.
-
 'use strict'
 
 chrome.runtime.onInstalled.addListener(function () {

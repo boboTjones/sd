@@ -8,14 +8,17 @@ const deleteButton = document.getElementById('delete_button')
 let token; let url; let user; let teamId = ''
 let teams = {}
 
+var activeTab
+chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+  activeTab = tabs[0]
+});
+
 function htmlEscape (str, q) {
   var out = []
   var r
-
   out['&'] = '&amp;'
   out['<'] = '&lt;'
   out['>'] = '&gt;'
-
   if (q) {
     r = /[&<>]/g
   } else {
@@ -42,7 +45,6 @@ function renderPageButtons (data) {
   var buttonDiv = document.createElement('div')
   setAttributes(buttonDiv, { class: 'pagination', id: 'page_buttons' })
   var buttonList = document.createElement('ul')
-
   if (data.page > 5) {
     offset = data.page - 5
     endset = data.page + 5
@@ -54,13 +56,11 @@ function renderPageButtons (data) {
     first.innerHTML = '<li><<<</li>'
     buttonList.appendChild(first)
   }
-
   if ((pageCount - data.page) > 5) {
     endset = offset + 10
   } else {
     endset = pageCount + 1
   }
-
   for (var i = offset; i < endset; i++) {
     var a = document.createElement('a')
     setAttributes(a, { id: i, href: '#' })
@@ -73,7 +73,6 @@ function renderPageButtons (data) {
     a.innerHTML = '<li>' + i + '</li>'
     buttonList.appendChild(a)
   }
-
   if (data.page < (pageCount - 5)) {
     var last = document.createElement('a')
     setAttributes(last, { id: data.page_count, href: '#' })
@@ -112,16 +111,14 @@ function renderMessages (data) {
           row.insertCell(2).innerHTML = htmlEscape(line.text, false)
         }
       }
-    } // XX ToDo(erin): else print something sad...
+    } 
   }
   var m = document.getElementById('messages')
   m.innerHTML = ''
   m.appendChild(table, m)
   var b = renderPageButtons(blob.pagination)
   m.appendChild(b)
-
   var s = document.querySelector('input[name=select_all]')
-
   s.addEventListener('change', function (e) {
     var items = document.querySelectorAll('input[name="ts"]')
     for (const [i, item] of Object.entries(items)) {
@@ -155,15 +152,12 @@ const getMessages = function (pageId = 1) {
 function zorchMessages (id, ts) {
   var req = new XMLHttpRequest()
   var postData = 'channel=' + id + '&ts=' + ts + '&token=' + token
-
   req.open('POST', url + 'api/chat.delete', true)
   req.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded')
   req.onreadystatechange = function () {
     if (req.readyState === 4 && req.status === 200) {
       // XXX ToDo(erin): catch and log errors
       console.log(req.response)
-    } else {
-      console.log(req)
     }
   }
   req.send(postData)
@@ -174,20 +168,11 @@ goButton.onclick = function (e) {
   chrome.tabs.executeScript({ code: 'localStorage.getItem("localConfig_v2")' }, function (r) {
     const data = JSON.parse(r[0])
     teams = data.teams
-    teamId = data.lastActiveTeamId
+    teamId = activeTab.url.split("/")[4]
     url = teams[teamId].url
     token = teams[teamId].token
     user = teams[teamId].user_id
     getMessages(1)
-  })
-}
-
-// I don't think this is working.
-function randSleep () {
-  return new Promise(r => {
-    setTimeout(() => {
-      r('helu')
-    }, Math.random() * 100)
   })
 }
 
@@ -196,7 +181,7 @@ deleteButton.onclick = function (e) {
   var items = document.querySelectorAll('input[name="ts"]:checked')
   for (const [i, item] of Object.entries(items)) {
     // XXX ToDo(erin): maybe want to slap an ARE YOU SURE? on this.
-    zorchMessages(item.id, item.value).then(randSleep())
+    zorchMessages(item.id, item.value)
   }
   getMessages(1)
 }
