@@ -92,7 +92,7 @@ function renderMessages (data) {
     blob = JSON.parse(data)
   } catch (e) {
     // XX ToDo(erin): This hasn't hit yet. Probably need to put something in the messages div when it does.
-    console.log(['Error parsing server response', e])
+    alert(['Error parsing server response', e])
   } finally {
     if (blob.ok === true) {
       var table = document.createElement('table')
@@ -136,6 +136,7 @@ const getMessages = function (pageId = 1) {
     req.open('POST', url + 'api/search.modules', true)
     req.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded')
     req.onload = function (e) {
+      alert(e);
       if (req.status === 200) {
         resolve(renderMessages(req.response))
       } else {
@@ -143,7 +144,7 @@ const getMessages = function (pageId = 1) {
       }
     }
     req.onerror = function (e) {
-      reject(console.log(e))
+      reject(alert(e))
     }
     req.send(postData)
   })
@@ -157,23 +158,45 @@ function zorchMessages (id, ts) {
   req.onreadystatechange = function () {
     if (req.readyState === 4 && req.status === 200) {
       // XXX ToDo(erin): catch and log errors
-      console.log(req.response)
+      alert(req.response)
     }
   }
   req.send(postData)
 };
 
+function hroo (r) {
+  alert(["Hroo", r]);
+  let veetwo = localStorage.getItem("localConfig_v2");
+  return veetwo;
+}
+
+async function getCurrentTab() {
+  let queryOptions = { active: true, currentWindow: true };
+  let [tab] = await chrome.tabs.query(queryOptions);
+  return tab;
+}
+  
 goButton.onclick = function (e) {
-  e.preventDefault()
-  chrome.tabs.executeScript({ code: 'localStorage.getItem("localConfig_v2")' }, function (r) {
-    const data = JSON.parse(r[0])
-    teams = data.teams
-    teamId = activeTab.url.split("/")[4]
-    url = teams[teamId].url
-    token = teams[teamId].token
-    user = teams[teamId].user_id
-    getMessages(1)
-  })
+  e.preventDefault();
+  var tab = "";
+  getCurrentTab().then(p => {
+    alert(["onclick", Object.keys(p)]);
+    tab = p;
+  }).catch(e => {
+    alert(e);
+  });
+  
+  try {
+    chrome.scripting.executeScript({ 
+      target:  {tabId: tab.id},
+      func: hroo
+    }, (o) => { 
+      alert(o);
+    }
+    );
+  } catch (e) {
+    alert(["gravy error", e])
+  }
 }
 
 deleteButton.onclick = function (e) {
