@@ -9,11 +9,11 @@ let token; let url; let user; let teamId = ''
 let teams = {}
 
 var activeTab
-chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
   activeTab = tabs[0]
 });
 
-function htmlEscape (str, q) {
+function htmlEscape(str, q) {
   var out = []
   var r
   out['&'] = '&amp;'
@@ -31,13 +31,13 @@ function htmlEscape (str, q) {
   })
 };
 
-function setAttributes (element, options) {
+function setAttributes(element, options) {
   Object.keys(options).forEach(function (a) {
     element.setAttribute(a, options[a])
   })
 }
 
-function renderPageButtons (data) {
+function renderPageButtons(data) {
   // Slack API apparently doesn't let you get more than 100 pages of history.
   var pageCount = (data.page_count < 100 ? data.page_count : 100)
   var offset = 1
@@ -86,13 +86,13 @@ function renderPageButtons (data) {
   return buttonDiv
 }
 
-function renderMessages (data) {
+function renderMessages(data) {
   var blob = {}
   try {
     blob = JSON.parse(data)
   } catch (e) {
     // XX ToDo(erin): This hasn't hit yet. Probably need to put something in the messages div when it does.
-    alert(['Error parsing server response', e])
+    console.log(['Error parsing server response', e])
   } finally {
     if (blob.ok === true) {
       var table = document.createElement('table')
@@ -111,7 +111,7 @@ function renderMessages (data) {
           row.insertCell(2).innerHTML = htmlEscape(line.text, false)
         }
       }
-    } 
+    }
   }
   var m = document.getElementById('messages')
   m.innerHTML = ''
@@ -130,13 +130,13 @@ function renderMessages (data) {
 };
 
 const getMessages = function (pageId = 1) {
-  return new Promise(function(resolve, reject) {
+  return new Promise(function (resolve, reject) {
     var req = new XMLHttpRequest()
     var postData = 'module=messages&sort=score&query=from%3a%3c@' + user + '%3e&token=' + token + '&team=' + teamId + '&page=' + pageId
     req.open('POST', url + 'api/search.modules', true)
     req.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded')
     req.onload = function (e) {
-      alert(e);
+      console.log(e);
       if (req.status === 200) {
         resolve(renderMessages(req.response))
       } else {
@@ -144,13 +144,13 @@ const getMessages = function (pageId = 1) {
       }
     }
     req.onerror = function (e) {
-      reject(alert(e))
+      reject(console.log(e))
     }
     req.send(postData)
   })
 };
 
-function zorchMessages (id, ts) {
+function zorchMessages(id, ts) {
   var req = new XMLHttpRequest()
   var postData = 'channel=' + id + '&ts=' + ts + '&token=' + token
   req.open('POST', url + 'api/chat.delete', true)
@@ -158,14 +158,13 @@ function zorchMessages (id, ts) {
   req.onreadystatechange = function () {
     if (req.readyState === 4 && req.status === 200) {
       // XXX ToDo(erin): catch and log errors
-      alert(req.response)
+      console.log(req.response)
     }
   }
   req.send(postData)
 };
 
-function hroo (r) {
-  alert(["Hroo", r]);
+function getLocalConfigV2(r) {
   let veetwo = localStorage.getItem("localConfig_v2");
   return veetwo;
 }
@@ -175,27 +174,28 @@ async function getCurrentTab() {
   let [tab] = await chrome.tabs.query(queryOptions);
   return tab;
 }
-  
+
 goButton.onclick = function (e) {
   e.preventDefault();
-  var tab = "";
-  getCurrentTab().then(p => {
-    alert(["onclick", Object.keys(p)]);
-    tab = p;
-  }).catch(e => {
-    alert(e);
-  });
-  
   try {
-    chrome.scripting.executeScript({ 
-      target:  {tabId: tab.id},
-      func: hroo
-    }, (o) => { 
-      alert(o);
+    chrome.scripting.executeScript({
+      target: {
+        tabId: activeTab.id
+      },
+      func: getLocalConfigV2
+    }, (o) => {
+      let data = JSON.parse(o[0]["result"]);
+      //alert(Object.keys(data));
+      teams = data.teams
+      teamId = activeTab.url.split("/")[4]
+      url = teams[teamId].url
+      token = teams[teamId].token
+      user = teams[teamId].user_id
+      getMessages(1)
     }
     );
   } catch (e) {
-    alert(["gravy error", e])
+    alert(["gravity error", e])
   }
 }
 

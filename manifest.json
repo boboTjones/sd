@@ -1,20 +1,24 @@
 {
   "name": "Slack Ghosties",
-  "version": "1.0",
   "description": "Bulk delete Slack messages.",
-  "permissions": ["activeTab", "declarativeContent", "scripting", "storage", "tabs"],
-  "host_permissions": ["https://*.slack.com/"],
+  "version": "2.0",
+  "manifest_version": 3,
   "background": {
     "service_worker": "background.js"
   },
+  "permissions": ["activeTab", "declarativeContent", "scripting", "storage", "tabs"],
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "images/gt-16.png",
+      "48": "images/gt-48.png",
+      "128": "images/gt-128.png" 
+    }
+    },
   "icons": {
     "16": "images/gt-16.png",
     "48": "images/gt-48.png",
-    "128": "images/gt-128.png"    
+    "128": "images/gt-128.png"
   },
-  "action": {
-    "default_popup": "popup.html",
-    "default_icon": "images/gt-128.png"
-    },
-  "manifest_version": 3
+  "host_permissions": ["https://*.slack.com/"]
 }
