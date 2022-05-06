@@ -5,7 +5,7 @@
 const goButton = document.getElementById('go_button')
 const deleteButton = document.getElementById('delete_button')
 
-let token; let url; let user; let teamId = ''
+let token; let url; let user; let teamId; let chanId = ''
 let teams = {}
 
 var activeTab
@@ -132,7 +132,7 @@ function renderMessages(data) {
 const getMessages = function (pageId = 1) {
   return new Promise(function (resolve, reject) {
     var req = new XMLHttpRequest()
-    var postData = 'module=messages&sort=score&query=from%3a%3c@' + user + '%3e&token=' + token + '&team=' + teamId + '&page=' + pageId
+    var postData = 'module=messages&sort=score&query=from%3a%3c%40' + user + '%3E%20in%3A%3C%40' + chanId + '%3e&token=' + token + '&team=' + teamId + '&page=' + pageId
     req.open('POST', url + 'api/search.modules', true)
     req.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded')
     req.onload = function (e) {
@@ -169,12 +169,6 @@ function getLocalConfigV2(r) {
   return veetwo;
 }
 
-async function getCurrentTab() {
-  let queryOptions = { active: true, currentWindow: true };
-  let [tab] = await chrome.tabs.query(queryOptions);
-  return tab;
-}
-
 goButton.onclick = function (e) {
   e.preventDefault();
   try {
@@ -185,9 +179,9 @@ goButton.onclick = function (e) {
       func: getLocalConfigV2
     }, (o) => {
       let data = JSON.parse(o[0]["result"]);
-      //alert(Object.keys(data));
       teams = data.teams
       teamId = activeTab.url.split("/")[4]
+      chanId = activeTab.url.split("/")[5]
       url = teams[teamId].url
       token = teams[teamId].token
       user = teams[teamId].user_id
@@ -203,7 +197,6 @@ deleteButton.onclick = function (e) {
   e.preventDefault()
   var items = document.querySelectorAll('input[name="ts"]:checked')
   for (const [i, item] of Object.entries(items)) {
-    // XXX ToDo(erin): maybe want to slap an ARE YOU SURE? on this.
     zorchMessages(item.id, item.value)
   }
   getMessages(1)
