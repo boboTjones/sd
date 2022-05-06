@@ -32,7 +32,7 @@ Read the [Getting Started Tutorial](https://developer.chrome.com/extensions/gets
 #### Known problems
 
 * Slack Deleties uses what appears to be a deprecated Slack API endpoint. That may go away in the future.
-* Deleted messages do not always disappear and must be deleted multiple times.
+* Deleted messages do not always disappear and must be deleted multiple times. Usually this is caused by rate limiting. 
 * Pagination in the popup is execrable. Writing that code around what the Slack API returns was grisly and I gave up when it got to the point where it was usuable enough to do what I needed.
 
 #### History
