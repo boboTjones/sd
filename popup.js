@@ -136,7 +136,6 @@ const getMessages = function (pageId = 1) {
     req.open('POST', url + 'api/search.modules', true)
     req.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded')
     req.onload = function (e) {
-      console.log(e);
       if (req.status === 200) {
         resolve(renderMessages(req.response))
       } else {
@@ -195,9 +194,12 @@ goButton.onclick = function (e) {
 
 deleteButton.onclick = function (e) {
   e.preventDefault()
+  var pageNo = document.querySelectorAll('a.active')[0].id;
   var items = document.querySelectorAll('input[name="ts"]:checked')
   for (const [i, item] of Object.entries(items)) {
     zorchMessages(item.id, item.value)
   }
-  getMessages(1)
+  pageNo++;
+  console.log("fetching page " + pageNo);
+  getMessages(pageNo);
 }
