@@ -192,14 +192,16 @@ goButton.onclick = function (e) {
   }
 }
 
+
 deleteButton.onclick = function (e) {
   e.preventDefault()
   var pageNo = document.querySelectorAll('a.active')[0].id;
   var items = document.querySelectorAll('input[name="ts"]:checked')
   for (const [i, item] of Object.entries(items)) {
-    zorchMessages(item.id, item.value)
+    setTimeout(function () {
+      zorchMessages(item.id, item.value)
+    }, (5 * 1000));
   }
   pageNo++;
-  console.log("fetching page " + pageNo);
   getMessages(pageNo);
 }
