@@ -23,7 +23,7 @@ Read the [Getting Started Tutorial](https://developer.chrome.com/extensions/gets
 
 #### How do I use Slack Deleties?
 
-* Navigate to the conversaiton you wish to ghost from. 
+* Navigate to the conversation you wish to ghost from. 
 * Click on the Slack Deleties garbage truck icon. A popup will appear. 
 * Click the button labeled Fetch. This will display a paginated set of your messages for that conversation.
 * Either click the unlabeled Select All button in the upper left or select individual messages. 
