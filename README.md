@@ -6,6 +6,7 @@ A Chrome extension for deleting your Slack messages in bulk groups of ~20 messag
 Multiple reasons: 
 
  - Sometimes I want to ghost off of a Slack. 
+ - Sometimes you can't trust even the closest people in your life to not screenshot your conversations and use them against you.
  - The UI for deleting messages on Slack is cumbersome -- I expect deliberately so, to discourage people from doing it.
  - Because I wanted to write the simplest possible Chrome extension
  
