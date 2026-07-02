@@ -1,85 +1,211 @@
 /* Copyright 2020 Erin Ptacek. All rights reserved. */
 
+:root {
+  color-scheme: dark;
+
+  /* Dark theme (default) — high-contrast, WCAG-AA+ */
+  --bg: #0f141c;
+  --surface: #171e29;
+  --surface-hover: #212a38;
+  --border: #2b3648;
+  --text: #e8eef6;         /* ~14:1 on --bg */
+  --text-muted: #a7b4c6;   /* ~7:1 on --bg  */
+  --accent: #7cb7ff;
+  --accent-strong: #4a9eff;
+  --on-accent: #0f141c;
+  --danger: #ff6b6b;
+  --danger-strong: #ff4d4d;
+  --on-danger: #1a0505;
+  --focus: #ffd166;
+  --radius: 8px;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color-scheme: light;
+    --bg: #f5f7fa;
+    --surface: #ffffff;
+    --surface-hover: #eef2f7;
+    --border: #d3dae4;
+    --text: #12161f;
+    --text-muted: #4a5567;
+    --accent: #1f6feb;
+    --accent-strong: #1858c4;
+    --on-accent: #ffffff;
+    --danger: #c1121f;
+    --danger-strong: #97000c;
+    --on-danger: #ffffff;
+    --focus: #9a6700;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
 body {
-  margin: 5px;
-  padding: 5px;
-  width: 500px;
-  font-family: Arial, Helvetica, sans-serif;
-  font-size: 100%;
+  margin: 0;
+  padding: 16px;
+  width: 480px;
+  min-height: 200px;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-size: 15px;
+  line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
-  color: #aaa;
-  background: #3c4452;
+  color: var(--text);
+  background: var(--bg);
 }
 
 #main {
-  display: block;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+#messages p {
+  margin: 0;
+  color: var(--text-muted);
+}
+
+/* --- Buttons --- */
+
+#buttons {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
 button {
-  padding: 12px;
-  margin: 5px;
-  color: #3c4452;
-  background: #aaa;
+  appearance: none;
+  min-height: 44px;
+  padding: 10px 18px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--on-accent);
+  background: var(--accent);
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: background-color 0.15s ease, transform 0.05s ease;
 }
+
+button:hover {
+  background: var(--accent-strong);
+}
+
+button:active {
+  transform: translateY(1px);
+}
+
+button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* The delete action is destructive — flag it. */
+#delete_button {
+  color: var(--on-danger);
+  background: var(--danger);
+}
+
+#delete_button:hover {
+  background: var(--danger-strong);
+}
+
+/* --- Message table --- */
 
 table.messages-table {
-  width: 500px; 
+  width: 100%;
   border-collapse: collapse;
-  margin: 0 auto;
-  float: left;
-}
-
-tr:hover {
-    background: #59657a;
-}
-
-thead {
-  font-weight: bold;
-  color: #dd9;
-}
-
-td {
-    padding: 5px;
-    margin: 5px;
-    word-wrap:break-word;
-}
-
-li, a{
   font-size: 14px;
 }
 
-a{
-  text-decoration: none;
+table.messages-table th,
+table.messages-table td {
+  padding: 10px 8px;
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid var(--border);
+  word-break: break-word;
 }
 
-.pagination{
-  padding: 30px 0;
+thead th {
+  position: sticky;
+  top: 0;
+  font-weight: 700;
+  color: var(--text);
+  background: var(--surface);
+  border-bottom: 2px solid var(--border);
 }
 
-.pagination ul, li{
+tbody tr:hover {
+  background: var(--surface-hover);
+}
+
+/* Native-styled, comfortably sized checkboxes */
+input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--accent-strong);
+  cursor: pointer;
+}
+
+/* --- Pagination --- */
+
+.pagination {
+  padding: 4px 0 0;
+}
+
+.pagination ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
   margin: 0;
   padding: 0;
-  list-style-type: none;
+  list-style: none;
 }
 
-.pagination a{
-  display: inline-block;
-  width: 40px;
+.pagination a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
   height: 40px;
-  color: #dd9;
-  line-height: 40px;
-  padding: 0;
-  text-align: center;
-  border-radius: 5px;
-
+  padding: 0 8px;
+  color: var(--accent);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
 }
 
-.pagination a.active{
-  background-color: #dd9;
-  color: #3c4452;
+.pagination a li {
+  list-style: none;
 }
 
 .pagination a:hover:not(.active) {
-    background-color: #59657a;
+  background: var(--surface-hover);
+}
+
+.pagination a.active {
+  color: var(--on-accent);
+  background: var(--accent-strong);
+  border-color: var(--accent-strong);
+}
+
+/* --- Accessibility: visible keyboard focus everywhere --- */
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+  }
 }
