@@ -20,5 +20,5 @@
     "48": "images/gt-48.png",
     "128": "images/gt-128.png"
   },
-  "host_permissions": ["https://*.slack.com/"]
+  "host_permissions": ["https://*.slack.com/*"]
 }
