@@ -145,6 +145,18 @@ const searchViaModules = async (pageId) => {
 // whole conversation, then paginate client-side.
 const loadAllHistory = async () => {
   var collected = []
+  var seen = new Set() // dedup by ts across history + thread replies
+  var threadParents = [] // thread roots to scan for our replies
+
+  var keep = (mm) => {
+    // Only the user's own, ordinary messages (skip join/leave/bot subtypes).
+    if (mm.user === user && !mm.subtype && !seen.has(mm.ts)) {
+      collected.push({ channelId: chanId, ts: mm.ts, text: mm.text || '' })
+      seen.add(mm.ts)
+    }
+  }
+
+  // Pass 1: top-level messages.
   var cursor = ''
   for (var b = 0; b < HISTORY_MAX_BATCHES; b++) {
     var params = { channel: chanId, token: token, limit: String(HISTORY_LIMIT) }
@@ -153,9 +165,11 @@ const loadAllHistory = async () => {
     }
     var blob = await slackPost('api/conversations.history', params)
     for (const mm of (blob.messages || [])) {
-      // Only the user's own, ordinary messages (skip join/leave/bot subtypes).
-      if (mm.user === user && !mm.subtype) {
-        collected.push({ channelId: chanId, ts: mm.ts, text: mm.text || '' })
+      keep(mm)
+      // conversations.history returns only thread roots, not their replies.
+      // Note any root with replies so we can fetch our own replies below.
+      if (mm.reply_count > 0 && mm.thread_ts) {
+        threadParents.push(mm.thread_ts)
       }
     }
     cursor = (blob.response_metadata && blob.response_metadata.next_cursor) || ''
@@ -164,6 +178,36 @@ const loadAllHistory = async () => {
     }
     await sleep(300)
   }
+
+  // Pass 2: thread replies (any thread we participated in — even if someone
+  // else started it — since chat.delete can still remove our own replies).
+  for (const threadTs of threadParents) {
+    var rcursor = ''
+    for (var rb = 0; rb < HISTORY_MAX_BATCHES; rb++) {
+      var rparams = { channel: chanId, ts: threadTs, token: token, limit: String(HISTORY_LIMIT) }
+      if (rcursor) {
+        rparams.cursor = rcursor
+      }
+      var rblob
+      try {
+        rblob = await slackPost('api/conversations.replies', rparams)
+      } catch (rerr) {
+        console.warn('[deleties] conversations.replies failed for ' + threadTs + ':', rerr)
+        break
+      }
+      for (const rm of (rblob.messages || [])) {
+        keep(rm)
+      }
+      rcursor = (rblob.response_metadata && rblob.response_metadata.next_cursor) || ''
+      if (!rcursor) {
+        break
+      }
+      await sleep(300)
+    }
+  }
+
+  // Newest first, so pagination is stable and intuitive.
+  collected.sort((a, b) => Number(b.ts) - Number(a.ts))
   return collected
 }
 
